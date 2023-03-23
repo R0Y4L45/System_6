@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,58 +16,121 @@ namespace SysProgHW6;
 
 public partial class MainWindow : Window
 {
-    ObservableCollection<string> words = new ObservableCollection<string>();
-    public ObservableCollection<string> fittingWords { get; set; }
+    public ObservableCollection<string> guessWords { get; set; }
     Stopwatch stopwatch = new Stopwatch();
-    StringBuilder text = new StringBuilder();
+    StringBuilder text = new StringBuilder(), guessWord = new StringBuilder();
     bool flag2 = true, flag3 = true, flag4 = true, flag5 = true,
-        flag6 = true, flag7 = true, flag8 = true, flag9 = true;
+        flag6 = true, flag7 = true, flag8 = true, flag9 = true, checker = false;
     byte num2 = 0, num3 = 0, num4 = 0, num5 = 0, num6 = 0,
         num7 = 0, num8 = 0, num9 = 0;
     char letter = default;
+
+
+
+
+
+
     public MainWindow()
     {
         InitializeComponent();
         DataContext = this;
-        fittingWords = new()
+        guessWords = new()
         {
             "salam",
             "necesen",
-            "C#",
+            "c#",
+            "royal",
+            "family",
+            "rasim"
         };
+
     }
-
-    private void tb_TextChanged(object sender, TextChangedEventArgs e)
+    private void lb_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        //if (string.IsNullOrWhiteSpace(tb.Text))
-        //{
-        //    fittingWords.Clear();
-        //    return;
-        //}
+        ListBox? listBox = sender as ListBox;
 
-        //Task.Run(() =>
-        //{
-        //    Dispatcher.Invoke(() =>
-        //    {
-        //        fittingWords.Clear();
+        if (listBox != null)
+        {
+            var words = tb.Text.Split(' ');
+            byte index = 0;
 
-        //        foreach (var word in words)
-        //        {
-        //            if (startCount > 0 && word.ToLower().StartsWith(tb.Text.Substring(0, startCount).ToLower()))
-        //            {
-        //                fittingWords.Add(word);
-        //            }
+            foreach (char letter in words[words.Length - 1])
+                if (letter == guessWord[index++])
+                    continue;
 
-        //            if (word.ToLower().StartsWith(tb.Text.ToLower()) && startCount == 0)
-        //                fittingWords.Add(word);
-        //        }
-        //    });
-        //});
+            if (listBox.SelectedItem is not null)
+            {
+                string word = listBox.SelectedItem.ToString()!;
+                tb.Text += word.Substring(index);
+            }
+            checker = true;
+            listBox.Items.Clear();
+
+            tb.Focus();
+            tb.CaretIndex = tb.Text.Length;
+        }
+    }
+    private async void tb_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        lb.SelectionChanged -= lb_SelectionChanged;
+        await Task.Run(() =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                if (tb.Text == string.Empty && lb.Items.Count > 0)
+                    lb.Items.Clear();
+            });
+            if (!checker)
+            {
+                foreach (string word in guessWords)
+                {
+                    for (int i = 0; i < guessWord.Length; i++)
+                    {
+                        if (word.Length == i)
+                            break;
+
+                        if (guessWord[i] == word[i])
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                if (!lb.Items.Contains(word))
+                                    lb.Items.Add(word);
+                            });
+                        }
+                        else
+                        {
+                            Dispatcher.Invoke(() =>
+                            {
+                                lb.Items.Remove(word);
+                            });
+                            break;
+                        }
+                    }
+                }
+            }
+        });
+        lb.SelectionChanged += lb_SelectionChanged;
     }
     private void Button_Click_Clr(object sender, RoutedEventArgs e)
     {
         if (tb.Text.Length > 0)
             tb.Text = tb.Text.Substring(0, tb.Text.Length - 1);
+        if (guessWord.Length > 0)
+            guessWord.Remove(guessWord.Length - 1, 1);
+        
+        checker = false;
+        //MessageBox.Show(guessWord.ToString());
+        tb.Focus();
+        tb.CaretIndex = tb.Text.Length;
+
+        flag2 = true;
+        flag3 = true;
+        flag4 = true;
+        flag5 = true;
+        flag6 = true;
+        flag7 = true;
+        flag8 = true;
+        flag9 = true;
     }
     private void Button_Click_2(object sender, RoutedEventArgs e)
     {
@@ -112,14 +176,26 @@ public partial class MainWindow : Window
             flag7 = true;
             flag8 = true;
             flag9 = true;
+
+            guessWord.Append(letter);
         }
         else
         {
             text[text.Length - 1] = letter;
             tb.Text = text.ToString();
+
+            if (guessWord.Length > 0)
+            {
+                guessWord.Remove(guessWord.Length - 1, 1);
+                guessWord.Append(letter);
+            }
+            else
+                guessWord.Append(letter);
         }
         num2++;
 
+        tb.Focus();
+        tb.CaretIndex = tb.Text.Length;
         stopwatch.Reset();
         text.Clear();
         stopwatch.Start();
@@ -168,14 +244,26 @@ public partial class MainWindow : Window
             flag7 = true;
             flag8 = true;
             flag9 = true;
+
+            guessWord.Append(letter);
         }
         else
         {
             text[text.Length - 1] = letter;
             tb.Text = text.ToString();
+
+            if (guessWord.Length > 0)
+            {
+                guessWord.Remove(guessWord.Length - 1, 1);
+                guessWord.Append(letter);
+            }
+            else
+                guessWord.Append(letter);
         }
         num3++;
 
+        tb.Focus();
+        tb.CaretIndex = tb.Text.Length;
         stopwatch.Reset();
         text.Clear();
         stopwatch.Start();
@@ -224,14 +312,26 @@ public partial class MainWindow : Window
             flag7 = true;
             flag8 = true;
             flag9 = true;
+
+            guessWord.Append(letter);
         }
         else
         {
             text[text.Length - 1] = letter;
             tb.Text = text.ToString();
+
+            if (guessWord.Length > 0)
+            {
+                guessWord.Remove(guessWord.Length - 1, 1);
+                guessWord.Append(letter);
+            }
+            else
+                guessWord.Append(letter);
         }
         num4++;
 
+        tb.Focus();
+        tb.CaretIndex = tb.Text.Length;
         stopwatch.Reset();
         text.Clear();
         stopwatch.Start();
@@ -280,14 +380,26 @@ public partial class MainWindow : Window
             flag7 = true;
             flag8 = true;
             flag9 = true;
+
+            guessWord.Append(letter);
         }
         else
         {
             text[text.Length - 1] = letter;
             tb.Text = text.ToString();
+
+            if (guessWord.Length > 0)
+            {
+                guessWord.Remove(guessWord.Length - 1, 1);
+                guessWord.Append(letter);
+            }
+            else
+                guessWord.Append(letter);
         }
         num5++;
 
+        tb.Focus();
+        tb.CaretIndex = tb.Text.Length;
         stopwatch.Reset();
         text.Clear();
         stopwatch.Start();
@@ -336,14 +448,26 @@ public partial class MainWindow : Window
             flag7 = true;
             flag8 = true;
             flag9 = true;
+
+            guessWord.Append(letter);
         }
         else
         {
             text[text.Length - 1] = letter;
             tb.Text = text.ToString();
+
+            if (guessWord.Length > 0)
+            {
+                guessWord.Remove(guessWord.Length - 1, 1);
+                guessWord.Append(letter);
+            }
+            else
+                guessWord.Append(letter);
         }
         num6++;
 
+        tb.Focus();
+        tb.CaretIndex = tb.Text.Length;
         stopwatch.Reset();
         text.Clear();
         stopwatch.Start();
@@ -395,14 +519,26 @@ public partial class MainWindow : Window
             flag6 = true;
             flag8 = true;
             flag9 = true;
+
+            guessWord.Append(letter);
         }
         else
         {
             text[text.Length - 1] = letter;
             tb.Text = text.ToString();
+
+            if (guessWord.Length > 0)
+            {
+                guessWord.Remove(guessWord.Length - 1, 1);
+                guessWord.Append(letter);
+            }
+            else
+                guessWord.Append(letter);
         }
         num7++;
 
+        tb.Focus();
+        tb.CaretIndex = tb.Text.Length;
         stopwatch.Reset();
         text.Clear();
         stopwatch.Start();
@@ -451,14 +587,26 @@ public partial class MainWindow : Window
             flag6 = true;
             flag7 = true;
             flag9 = true;
+
+            guessWord.Append(letter);
         }
         else
         {
             text[text.Length - 1] = letter;
             tb.Text = text.ToString();
+
+            if (guessWord.Length > 0)
+            {
+                guessWord.Remove(guessWord.Length - 1, 1);
+                guessWord.Append(letter);
+            }
+            else
+                guessWord.Append(letter);
         }
         num8++;
 
+        tb.Focus();
+        tb.CaretIndex = tb.Text.Length;
         stopwatch.Reset();
         text.Clear();
         stopwatch.Start();
@@ -510,14 +658,26 @@ public partial class MainWindow : Window
             flag6 = true;
             flag7 = true;
             flag8 = true;
+
+            guessWord.Append(letter);
         }
         else
         {
             text[text.Length - 1] = letter;
             tb.Text = text.ToString();
+
+            if (guessWord.Length > 0)
+            {
+                guessWord.Remove(guessWord.Length - 1, 1);
+                guessWord.Append(letter);
+            }
+            else
+                guessWord.Append(letter);
         }
         num9++;
 
+        tb.Focus();
+        tb.CaretIndex = tb.Text.Length;
         stopwatch.Reset();
         text.Clear();
         stopwatch.Start();
@@ -536,7 +696,11 @@ public partial class MainWindow : Window
         flag8 = true;
         flag9 = true;
 
+        guessWord.Append('*');
+        tb.Text = text.ToString();
         text.Clear();
+        tb.Focus();
+        tb.CaretIndex = tb.Text.Length;
     }
     private void btnSharp_Click(object sender, RoutedEventArgs e)
     {
@@ -552,7 +716,11 @@ public partial class MainWindow : Window
         flag8 = true;
         flag9 = true;
 
+        guessWord.Append('#');
+        tb.Text = text.ToString();
         text.Clear();
+        tb.Focus();
+        tb.CaretIndex = tb.Text.Length;
     }
     private async void btn1_MouseDown(object sender, MouseButtonEventArgs e)
     {
@@ -560,6 +728,7 @@ public partial class MainWindow : Window
         {
             text.Append(tb.Text);
             text.Append('1');
+            guessWord.Append('1');
             tb.Text = text.ToString();
             if (stopwatch.IsRunning)
             {
@@ -586,6 +755,11 @@ public partial class MainWindow : Window
                         {
                             tb.Text = text.ToString();
                         });
+                        if (guessWord.Length > 0)
+                        {
+                            guessWord.Remove(guessWord.Length - 1, 1);
+                            guessWord.Append('.');
+                        }
                         break;
                     }
 
@@ -607,6 +781,7 @@ public partial class MainWindow : Window
         {
             text.Append(tb.Text);
             text.Append('0');
+            guessWord.Append('0');
             tb.Text = text.ToString();
             if (stopwatch.IsRunning)
             {
@@ -633,6 +808,8 @@ public partial class MainWindow : Window
                         {
                             tb.Text = text.ToString();
                         });
+                        guessWord.Clear();
+                        checker = false;
                         break;
                     }
 
@@ -646,6 +823,8 @@ public partial class MainWindow : Window
             stopwatch.Stop();
             stopwatch.Reset();
             text.Clear();
+            tb.Focus();
+            tb.CaretIndex = tb.Text.Length;
         }
     }
 }
