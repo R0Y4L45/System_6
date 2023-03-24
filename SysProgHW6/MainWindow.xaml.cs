@@ -1,16 +1,11 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.Eventing.Reader;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Markup.Localizer;
-using System.Windows.Media;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SysProgHW6;
 
@@ -25,11 +20,6 @@ public partial class MainWindow : Window
         num7 = 0, num8 = 0, num9 = 0;
     char letter = default;
 
-
-
-
-
-
     public MainWindow()
     {
         InitializeComponent();
@@ -43,7 +33,8 @@ public partial class MainWindow : Window
             "family",
             "rasim"
         };
-
+        tb.IsReadOnly = true;
+        tb.IsReadOnlyCaretVisible = true;
     }
     private void lb_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
@@ -264,6 +255,7 @@ public partial class MainWindow : Window
 
         tb.Focus();
         tb.CaretIndex = tb.Text.Length;
+
         stopwatch.Reset();
         text.Clear();
         stopwatch.Start();
